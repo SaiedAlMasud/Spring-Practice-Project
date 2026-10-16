@@ -1,4 +1,4 @@
-package com.example.leave.security;
+package com.example.leave.service;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -18,7 +18,7 @@ public class JwtService {
     );
 
     public String generateToken(String email) {
-        long expirationTime = 1000L * 60 * 60;
+        long expirationTime = 1000L * 60 ;
 
         return Jwts.builder()
                 .subject(email)
