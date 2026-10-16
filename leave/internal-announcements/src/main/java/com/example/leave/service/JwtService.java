@@ -1,5 +1,7 @@
 package com.example.leave.service;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Service;
@@ -26,5 +28,30 @@ public class JwtService {
                 .expiration(new Date(System.currentTimeMillis() + expirationTime))
                 .signWith(secretKey)
                 .compact();
+    }
+
+    public String extractEmail(String token) {
+        return extractClaims(token).getSubject();
+    }
+
+    public boolean isTokenValid(String token, String email) {
+        try {
+            Claims claims = extractClaims(token);
+
+            return email.equals(claims.getSubject())
+                    && claims.getExpiration() != null
+                    && claims.getExpiration().after(new Date());
+
+        } catch (JwtException | IllegalArgumentException exception) {
+            return false;
+        }
+    }
+
+    private Claims extractClaims(String token) {
+        return Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
     }
 }
