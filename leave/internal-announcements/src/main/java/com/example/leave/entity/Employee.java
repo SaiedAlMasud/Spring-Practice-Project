@@ -3,7 +3,8 @@ package com.example.leave.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-
+@Getter
+@Setter
 @Entity
 @Table(name = "employees")
 public class Employee {
@@ -11,29 +12,19 @@ public class Employee {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Getter
-    @Setter
     @Column(nullable = false, unique = true, length = 100)
     private String name;
 
-    @Getter
-    @Setter
     @Column(nullable = false, unique = true, length = 150)
     private String email;
 
-    @Getter
-    @Setter
     @Column(nullable = false)
     private String password;
 
-    @Getter
-    @Setter
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private Role role;
 
-    @Getter
-    @Setter
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "department_id", nullable = false)
     private Department department;

@@ -37,4 +37,10 @@ public interface AnnouncementRepository
             Pageable pageable
     );
 
+    long countByArchivedTrue();
+
+    long countByArchivedFalseAndExpiresAtAfter(
+            java.time.OffsetDateTime now
+    );
+
 }

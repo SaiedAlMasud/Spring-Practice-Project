@@ -1,6 +1,8 @@
 
 package com.example.leave.controller;
 
+import com.example.leave.dto.AcknowledgementResponse;
+import com.example.leave.dto.AcknowledgementTrackingResponse;
 import com.example.leave.dto.AnnouncementRequest;
 import com.example.leave.dto.AnnouncementResponse;
 import com.example.leave.entity.Announcement;
@@ -52,6 +54,60 @@ public class AnnouncementController {
                 type,
                 search,
                 pageable
+        );
+    }
+
+
+    @PostMapping("/{id}/acknowledge")
+    public AcknowledgementResponse acknowledgePolicy(
+            @PathVariable Long id,
+            Authentication authentication) {
+
+        return announcementService.acknowledgePolicy(
+                id,
+                authentication.getName()
+        );
+    }
+
+    @GetMapping("/{id}/acknowledgement-tracking")
+    public AcknowledgementTrackingResponse getAcknowledgementTracking(
+            @PathVariable Long id,
+            Authentication authentication) {
+
+        return announcementService.getAcknowledgementTracking(
+                id,
+                authentication.getName()
+        );
+    }
+
+    @GetMapping("/{id}")
+    public AnnouncementResponse getAnnouncementById(
+            @PathVariable Long id
+    ) {
+        return announcementService.getAnnouncementById(id);
+    }
+
+    @PutMapping("/{id}")
+    public AnnouncementResponse updateAnnouncement(
+            @PathVariable Long id,
+            @Valid @RequestBody AnnouncementRequest request,
+            Authentication authentication
+    ) {
+        return announcementService.updateAnnouncement(
+                id,
+                request,
+                authentication.getName()
+        );
+    }
+
+    @PatchMapping("/{id}/archive")
+    public AnnouncementResponse archiveAnnouncement(
+            @PathVariable Long id,
+            Authentication authentication
+    ) {
+        return announcementService.archiveAnnouncement(
+                id,
+                authentication.getName()
         );
     }
 

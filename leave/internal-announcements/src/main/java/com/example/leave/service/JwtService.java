@@ -20,7 +20,7 @@ public class JwtService {
     );
 
     public String generateToken(String email) {
-        long expirationTime = 1000L * 60 ;
+        long expirationTime = 1000L * 60 * 60;
 
         return Jwts.builder()
                 .subject(email)

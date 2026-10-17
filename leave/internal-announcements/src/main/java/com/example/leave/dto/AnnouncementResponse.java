@@ -19,5 +19,6 @@ public class AnnouncementResponse {
     private String createdByEmail;
     private OffsetDateTime expiresAt;
     private boolean archived;
+    private boolean acknowledged;
     private OffsetDateTime createdAt;
 }
