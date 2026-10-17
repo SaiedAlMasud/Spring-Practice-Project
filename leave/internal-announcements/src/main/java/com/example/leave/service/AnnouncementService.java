@@ -2,15 +2,20 @@
 package com.example.leave.service;
 
 import com.example.leave.dto.AnnouncementRequest;
-import com.example.leave.entity.Announcement;
-import com.example.leave.entity.Department;
-import com.example.leave.entity.Employee;
+import com.example.leave.dto.AnnouncementResponse;
+import com.example.leave.entity.*;
 import com.example.leave.repository.AnnouncementRepository;
 import com.example.leave.repository.DepartmentRepository;
 import com.example.leave.repository.EmployeeRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.time.OffsetDateTime;
+import java.util.Locale;
 
 @Service
 public class AnnouncementService {
@@ -28,7 +33,34 @@ public class AnnouncementService {
         this.employeeRepository = employeeRepository;
     }
 
-    public Announcement createAnnouncement(
+    @Transactional(readOnly = true)
+    public Page<AnnouncementResponse> getEmployeeFeed(
+            String employeeEmail,
+            AnnouncementType type,
+            String search,
+            Pageable pageable) {
+
+        Employee employee = employeeRepository
+                .findByEmailIgnoreCase(employeeEmail)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Employee not found"
+                ));
+
+        String normalizedSearch = (search == null || search.isBlank())
+                ? null
+                : search.trim().toLowerCase(Locale.ROOT);
+
+        return announcementRepository.findVisibleAnnouncements(
+                employee.getDepartment().getId(),
+                OffsetDateTime.now(),
+                type,
+                normalizedSearch,
+                pageable
+        ).map(this::toResponse);
+    }
+
+    public AnnouncementResponse createAnnouncement(
             AnnouncementRequest request,
             String creatorEmail) {
 
@@ -39,7 +71,7 @@ public class AnnouncementService {
                         "Employee not found"
                 ));
 
-        if (creator.getRole() != com.example.leave.entity.Role.HR) {
+        if (creator.getRole() != Role.HR) {
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN,
                     "Only HR can create announcements"
@@ -66,7 +98,33 @@ public class AnnouncementService {
         announcement.setCreatedBy(creator);
         announcement.setArchived(false);
 
-        return announcementRepository.save(announcement);
+        Announcement saved = announcementRepository.save(announcement);
+
+        return toResponse(saved);
+    }
+
+    private AnnouncementResponse toResponse(Announcement announcement){
+        AnnouncementResponse response = new AnnouncementResponse();
+
+        response.setId(announcement.getId());
+        response.setTitle(announcement.getTitle());
+        response.setBody(announcement.getBody());
+        response.setType(announcement.getType());
+
+        if (announcement.getTargetDepartment() != null) {
+            response.setTargetDepartmentId(announcement.getTargetDepartment().getId());
+            response.setTargetDepartmentName(announcement.getTargetDepartment().getName());
+        }
+
+        response.setCreatedByEmail(
+                announcement.getCreatedBy().getEmail()
+        );
+        response.setExpiresAt(announcement.getExpiresAt());
+        response.setArchived(announcement.isArchived());
+        response.setCreatedAt(announcement.getCreatedAt());
+
+        return response;
+
     }
 }
 
