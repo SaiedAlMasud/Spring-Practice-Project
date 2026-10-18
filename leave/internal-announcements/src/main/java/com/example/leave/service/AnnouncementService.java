@@ -226,6 +226,14 @@ public class AnnouncementService {
                         "Employee not found"
                 ));
 
+        // Only employees can acknowledge policy announcements.
+        if (employee.getRole() != Role.EMPLOYEE) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Only employees can acknowledge policies"
+            );
+        }
+
         Announcement announcement = announcementRepository
                 .findById(announcementId)
                 .orElseThrow(() -> new ResponseStatusException(
@@ -281,6 +289,7 @@ public class AnnouncementService {
         );
     }
 
+
     @Transactional(readOnly = true)
     public Page<AnnouncementResponse> getEmployeeFeed(
             String employeeEmail,
@@ -296,17 +305,45 @@ public class AnnouncementService {
                 ));
 
         String normalizedSearch = (search == null || search.isBlank())
-                ? null
+                ? ""
                 : search.trim().toLowerCase(Locale.ROOT);
 
-        return announcementRepository.findVisibleAnnouncements(
+        boolean filterByType = type != null;
+
+        // Used only when a type filter is supplied.
+        AnnouncementType effectiveType =
+                filterByType ? type : AnnouncementType.GENERAL;
+
+        Page<Announcement> announcements;
+
+        if (employee.getRole() == Role.HR) {
+            // HR can see active announcements from every department.
+            announcements = announcementRepository.findAllVisibleAnnouncements(
+                    OffsetDateTime.now(),
+                    filterByType,
+                    effectiveType,
+                    normalizedSearch,
+                    pageable
+            );
+
+            return announcements.map(this::toResponse);
+        }
+
+        // Employees can see ALL announcements and their own department's.
+        announcements = announcementRepository.findVisibleAnnouncements(
                 employee.getDepartment().getId(),
                 OffsetDateTime.now(),
-                type,
+                filterByType,
+                effectiveType,
                 normalizedSearch,
                 pageable
-        ).map(announcement -> toResponse(announcement, employeeEmail));
+        );
+
+        return announcements.map(
+                announcement -> toResponse(announcement, employeeEmail)
+        );
     }
+
 
     @Transactional
     public AnnouncementResponse createAnnouncement(
