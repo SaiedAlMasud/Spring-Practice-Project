@@ -2,6 +2,7 @@
 package com.example.leave.exception;
 
 import com.example.leave.dto.ErrorResponse;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -66,5 +67,17 @@ public class GlobalExceptionHandler {
         );
 
         return ResponseEntity.badRequest().body(error);
+    }
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponse> handleDataIntegrity(
+            DataIntegrityViolationException exception
+    ) {
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.CONFLICT.value(),
+                "A record with the same unique value already exists",
+                LocalDateTime.now()
+        );
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
     }
 }

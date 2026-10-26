@@ -7,6 +7,10 @@ import com.example.leave.dto.AnnouncementRequest;
 import com.example.leave.dto.AnnouncementResponse;
 import com.example.leave.entity.Announcement;
 import com.example.leave.entity.AnnouncementType;
+import com.example.leave.entity.Employee;
+import com.example.leave.entity.Role;
+import com.example.leave.repository.AnnouncementRepository;
+import com.example.leave.repository.EmployeeRepository;
 import com.example.leave.service.AnnouncementService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -15,16 +19,24 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.Locale;
 
 @RestController
 @RequestMapping("/api/announcements")
 public class AnnouncementController {
 
     private final AnnouncementService announcementService;
+    private final EmployeeRepository employeeRepository;
+    private final AnnouncementRepository announcementRepository;
 
-    public AnnouncementController(AnnouncementService announcementService) {
+    public AnnouncementController(AnnouncementService announcementService, EmployeeRepository employeeRepository, AnnouncementRepository announcementRepository) {
         this.announcementService = announcementService;
+        this.employeeRepository = employeeRepository;
+        this.announcementRepository = announcementRepository;
     }
 
     @PostMapping
@@ -56,6 +68,26 @@ public class AnnouncementController {
                 pageable
         );
     }
+
+    @GetMapping("/manage")
+    public Page<AnnouncementResponse> getAllForHr(
+            Authentication authentication,
+            @RequestParam(required = false) AnnouncementType type,
+            @RequestParam(required = false) String search,
+            @PageableDefault(
+                    size = 10,
+                    sort = "createdAt",
+                    direction = Sort.Direction.DESC
+            ) Pageable pageable) {
+
+        return announcementService.getAllForHr(
+                authentication.getName(),
+                type,
+                search,
+                pageable
+        );
+    }
+
 
 
     @PostMapping("/{id}/acknowledge")

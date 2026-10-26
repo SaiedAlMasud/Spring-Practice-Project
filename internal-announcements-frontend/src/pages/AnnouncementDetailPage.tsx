@@ -131,7 +131,7 @@ export default function AnnouncementDetailPage() {
 
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-slate-50">
+      <main className="flex min-h-[calc(100vh-4rem)] items-center justify-center bg-slate-50">
         <p className="text-slate-500">
           Loading announcement...
         </p>
@@ -141,7 +141,7 @@ export default function AnnouncementDetailPage() {
 
   if (error && !announcement) {
     return (
-      <main className="min-h-screen bg-slate-50 px-4 py-10">
+      <main className="min-h-[calc(100vh-4rem)] bg-slate-50 px-4 py-10">
         <div className="mx-auto max-w-3xl rounded-xl border border-red-200 bg-red-50 p-6">
           <p role="alert" className="text-red-700">
             {error}
@@ -173,7 +173,7 @@ export default function AnnouncementDetailPage() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-8 sm:px-6">
+    <main className="min-h-[calc(100vh-4rem)] bg-slate-50 px-4 py-8 sm:px-6">
       <article className="mx-auto max-w-3xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
         <Link
           to="/announcements"

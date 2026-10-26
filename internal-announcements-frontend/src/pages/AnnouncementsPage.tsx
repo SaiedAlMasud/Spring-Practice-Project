@@ -1,13 +1,13 @@
-
 import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 
-import { getAnnouncements } from "../services/announcementService";
+import {
+  getAnnouncements,
+  getManagedAnnouncements,
+} from "../services/announcementService";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
-import { ArrowLeft } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 
 import type {
   Announcement,
@@ -30,14 +30,18 @@ export default function AnnouncementsPage() {
   const [actionSuccess, setActionSuccess] = useState("");
   const [actionLoadingId, setActionLoadingId] = useState<number | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
-  const navigate = useNavigate();
 
   const loadAnnouncements = useCallback(async () => {
     setLoading(true);
     setError("");
 
     try {
-      const result = await getAnnouncements({
+      // HR সব announcement দেখবে, employee শুধু নিজের feed
+      const fetchAnnouncements = isHR
+        ? getManagedAnnouncements
+        : getAnnouncements;
+
+      const result = await fetchAnnouncements({
         search: search.trim() || undefined,
         type: type || undefined,
         page,
@@ -75,7 +79,7 @@ export default function AnnouncementsPage() {
     } finally {
       setLoading(false);
     }
-  }, [search, type, page, reloadKey]);
+  }, [search, type, page, reloadKey, isHR]);
 
   useEffect(() => {
     void loadAnnouncements();
@@ -143,19 +147,15 @@ export default function AnnouncementsPage() {
       : date.toLocaleDateString();
   };
 
-  return (
-    <main className="min-h-screen bg-slate-50 px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-5xl">
-        
-        <button
-        type="button"
-        onClick={() => navigate("/dashboard")}
-        className="mb-5 inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
-        >
-        <ArrowLeft size={18} aria-hidden="true" />
-        Back to Dashboard
-        </button>
+  const isExpired = (value: string) => {
+    const date = new Date(value);
 
+    return !Number.isNaN(date.getTime()) && date < new Date();
+  };
+
+  return (
+    <main className="min-h-[calc(100vh-4rem)] bg-slate-50 px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-5xl">
         <header className="mb-8">
           <p className="text-sm font-semibold uppercase tracking-wider text-blue-600">
             {isHR ? "HR Portal" : "Employee Portal"}
@@ -344,6 +344,20 @@ export default function AnnouncementsPage() {
                     </span>
                   )}
 
+                  {isHR && announcement.archived && (
+                    <span className="rounded-full bg-slate-200 px-3 py-1 text-xs font-semibold text-slate-700">
+                      Archived
+                    </span>
+                  )}
+
+                  {isHR &&
+                    !announcement.archived &&
+                    isExpired(announcement.expiresAt) && (
+                      <span className="rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold text-orange-800">
+                        Expired
+                      </span>
+                    )}
+
                   {announcement.type === "POLICY" && !isHR && (
                     <span
                       className={`rounded-full px-3 py-1 text-xs font-semibold ${
@@ -394,7 +408,7 @@ export default function AnnouncementsPage() {
                     </Link>
                   )}
 
-                  {isHR && (
+                  {isHR && !announcement.archived && (
                     <>
                       <Link
                         to={`/announcements/${announcement.id}/edit`}

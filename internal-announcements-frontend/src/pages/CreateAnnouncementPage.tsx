@@ -157,7 +157,7 @@ export default function CreateAnnouncementPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 px-4 py-10">
+    <div className="min-h-[calc(100vh-4rem)] bg-gray-100 px-4 py-10">
       <div className="mx-auto max-w-3xl">
         
         <button

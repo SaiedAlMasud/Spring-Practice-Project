@@ -1,10 +1,8 @@
-
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
-
-import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
+import { useAuth } from "../context/AuthContext";
 
 interface DashboardSummary {
   totalEmployees: number;
@@ -14,7 +12,7 @@ interface DashboardSummary {
 }
 
 export default function DashboardPage() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const isHR = user?.role === "HR";
 
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
@@ -61,63 +59,39 @@ export default function DashboardPage() {
       label: "Total Employees",
       value: summary?.totalEmployees,
       description: "Registered employees",
-      color: "bg-blue-50 text-blue-700",
     },
     {
       label: "Total Announcements",
       value: summary?.totalAnnouncements,
       description: "All announcements",
-      color: "bg-purple-50 text-purple-700",
     },
     {
       label: "Active Announcements",
       value: summary?.activeAnnouncements,
       description: "Currently active and unexpired",
-      color: "bg-green-50 text-green-700",
     },
     {
       label: "Archived Announcements",
       value: summary?.archivedAnnouncements,
       description: "Archived announcements",
-      color: "bg-amber-50 text-amber-700",
     },
   ];
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-8 sm:px-6 lg:px-8">
+    <main className="min-h-[calc(100vh-4rem)] bg-slate-50 px-4 py-8 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
-        <header className="mb-8 flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-wider text-blue-600">
-              {isHR ? "HR Portal" : "Employee Portal"}
-            </p>
+        <header className="mb-8">
+          <p className="text-sm font-semibold uppercase tracking-wider text-blue-600">
+            {isHR ? "HR Portal" : "Employee Portal"}
+          </p>
 
-            <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
-              Dashboard
-            </h1>
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
+            Dashboard
+          </h1>
 
-            <p className="mt-2 text-slate-600">
-              Welcome, {user?.email ?? "User"}
-            </p>
-
-            <span
-              className={`mt-2 inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-                isHR
-                  ? "bg-purple-100 text-purple-800"
-                  : "bg-blue-100 text-blue-800"
-              }`}
-            >
-              {user?.role ?? "Unknown Role"}
-            </span>
-          </div>
-
-          <button
-            type="button"
-            onClick={logout}
-            className="rounded-lg bg-red-600 px-4 py-2 font-semibold text-white transition hover:bg-red-700"
-          >
-            Logout
-          </button>
+          <p className="mt-2 text-slate-600">
+            Welcome, {user?.email ?? "User"}
+          </p>
         </header>
 
         {isHR ? (
@@ -188,7 +162,7 @@ export default function DashboardPage() {
                 HR Management
               </h2>
 
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 <Link
                   to="/announcements"
                   className="group rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition hover:border-blue-300 hover:shadow-md"
@@ -222,6 +196,25 @@ export default function DashboardPage() {
                       </h3>
                       <p className="mt-1 text-sm text-slate-500">
                         Publish a company update or policy.
+                      </p>
+                    </div>
+                  </div>
+                </Link>
+
+                <Link
+                  to="/employees"
+                  className="group rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition hover:border-blue-300 hover:shadow-md"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="rounded-xl bg-purple-100 p-3 text-2xl">
+                      👥
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-slate-900 group-hover:text-blue-700">
+                        Manage Employees
+                      </h3>
+                      <p className="mt-1 text-sm text-slate-500">
+                        View employees and add new ones.
                       </p>
                     </div>
                   </div>

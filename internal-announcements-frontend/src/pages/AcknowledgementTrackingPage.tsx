@@ -64,14 +64,14 @@ export default function AcknowledgementTrackingPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-slate-50 p-8 text-center text-slate-600">
+      <main className="min-h-[calc(100vh-4rem)] bg-slate-50 p-8 text-center text-slate-600">
         Loading acknowledgement tracking...
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-10 sm:px-6">
+    <main className="min-h-[calc(100vh-4rem)] bg-slate-50 px-4 py-10 sm:px-6">
       <div className="mx-auto max-w-4xl">
         <Link
           to="/announcements"

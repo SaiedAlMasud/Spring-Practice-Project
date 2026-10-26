@@ -60,6 +60,17 @@ export const getAnnouncement = async (
   return response.data;
 };
 
+export const getManagedAnnouncements = async (
+  params?: Record<string, string | number>
+): Promise<AnnouncementPage> => {
+  const response = await api.get<AnnouncementPage>(
+    "/announcements/manage",
+    { params }
+  );
+
+  return response.data;
+};
+
 export const acknowledgePolicy = async (id: number) => {
   const response = await api.post(
     `/announcements/${id}/acknowledge`

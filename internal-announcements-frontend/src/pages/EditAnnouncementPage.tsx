@@ -226,7 +226,7 @@ export default function EditAnnouncementPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-slate-50 p-8 text-center text-slate-600">
+      <main className="min-h-[calc(100vh-4rem)] bg-slate-50 p-8 text-center text-slate-600">
         Loading announcement...
       </main>
     );
@@ -240,7 +240,7 @@ export default function EditAnnouncementPage() {
     error === "Your session has expired. Please log in again.";
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-10">
+    <main className="min-h-[calc(100vh-4rem)] bg-slate-50 px-4 py-10">
       <div className="mx-auto max-w-3xl">
         
         <button
