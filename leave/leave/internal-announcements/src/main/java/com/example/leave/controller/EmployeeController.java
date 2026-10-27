@@ -2,6 +2,7 @@ package com.example.leave.controller;
 
 import com.example.leave.dto.CreateEmployeeRequest;
 import com.example.leave.dto.EmployeeResponse;
+import com.example.leave.dto.ResetPasswordRequest;
 import com.example.leave.service.EmployeeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -34,5 +36,17 @@ public class EmployeeController {
             Authentication authentication
     ) {
         return employeeService.getAllEmployees(authentication.getName());
+    }
+
+    @PatchMapping("/{id}/status")
+    public void updateStatus(@PathVariable Long id,
+                             @RequestParam boolean active,
+                             Principal principal) {
+        employeeService.setActive(id, active, principal.getName());
+    }
+    @PatchMapping("/{id}/password")
+    public void resetPassword(@PathVariable Long id,
+                              @Valid @RequestBody ResetPasswordRequest request, Principal principal) {
+        employeeService.resetPassword(id, request, principal.getName());
     }
 }

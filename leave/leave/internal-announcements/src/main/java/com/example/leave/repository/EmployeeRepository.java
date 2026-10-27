@@ -17,4 +17,6 @@ public interface EmployeeRepository
             Long departmentId,
             Role role
     );
+
+    String email(String email);
 }

@@ -11,6 +11,7 @@ import AnnouncementsPage from "./pages/AnnouncementsPage";
 import AnnouncementDetailPage from "./pages/AnnouncementDetailPage";
 import CreateAnnouncementPage from "./pages/CreateAnnouncementPage";
 import EmployeesPage from "./pages/EmployeesPage";
+import ChangePasswordPage from "./pages/ChangePasswordPage";
 
 function HomeRedirect() {
   const { user, token } = useAuth();
@@ -27,10 +28,8 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <Routes>
-          {/* Navbar ছাড়া পাতা */}
           <Route path="/" element={<HomeRedirect />} />
 
-          {/* Navbar সহ সব পাতা (লগইন করা থাকতে হবে) */}
           <Route
             element={
               <ProtectedRoute>
@@ -83,6 +82,15 @@ export default function App() {
               }
             />
           </Route>
+
+          <Route
+            path="/change-password"
+            element={
+              <ProtectedRoute>
+                <ChangePasswordPage />
+              </ProtectedRoute>
+            }
+          />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

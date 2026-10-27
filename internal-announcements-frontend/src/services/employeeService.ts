@@ -21,3 +21,11 @@ export const createEmployee = async (
 
   return response.data;
 };
+
+export const updateEmployeeStatus = async (id: number, active: boolean) => {
+  await api.patch(`/employees/${id}/status`, null, { params: { active } });
+};
+
+export const resetEmployeePassword = async (id: number, newPassword: string) => {
+  await api.patch(`/employees/${id}/password`, { newPassword });
+};

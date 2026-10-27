@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { loginUser } from "../services/authService";
@@ -14,25 +13,38 @@ export default function LoginPage() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setError("");
-    setLoading(true);
+  
+const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  event.preventDefault();
+  setError("");
+  setLoading(true);
 
-    try {
-  const result = await loginUser(form);
+  try {
+    const result = await loginUser(form);
 
-  login(result.token, result.email, result.role);
-  navigate("/dashboard", { replace: true });
-} catch {
-  setError("Login failed. Please check your email and password.");
-} finally {
-  setLoading(false);
-} 
-  };
+    login(
+      result.token,
+      result.email,
+      result.role,
+      result.mustChangePassword
+    );
+
+    if (result.mustChangePassword) {
+      navigate("/change-password", { replace: true });
+    } else {
+      navigate("/dashboard", { replace: true });
+    }
+  } catch {
+    setError("Login failed. Please check your email and password.");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <main className="flex min-h-[calc(100vh-4rem)] items-center justify-center bg-slate-100 px-4 py-10">
@@ -115,7 +127,7 @@ export default function LoginPage() {
         </form>
 
         <p className="mt-8 text-center text-xs text-slate-400">
-          Internal Announcements &amp; Policy Acknowledgement System
+          Internal Announcements & Policy Acknowledgement System
         </p>
       </section>
     </main>

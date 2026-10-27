@@ -1,7 +1,9 @@
+
 import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import {
   Bell,
+  KeyRound,
   LayoutDashboard,
   LogOut,
   Megaphone,
@@ -26,11 +28,13 @@ const hrLinks: NavItem[] = [
   { to: "/announcements", label: "Announcements", icon: Megaphone, end: true },
   { to: "/announcements/create", label: "Create", icon: Plus },
   { to: "/employees", label: "Employees", icon: Users },
+  { to: "/change-password", label: "Change Password", icon: KeyRound },
 ];
 
 const employeeLinks: NavItem[] = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/announcements", label: "Announcements", icon: Megaphone, end: true },
+  { to: "/change-password", label: "Change Password", icon: KeyRound },
 ];
 
 const linkClass = ({ isActive }: { isActive: boolean }) =>

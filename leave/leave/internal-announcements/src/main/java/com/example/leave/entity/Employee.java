@@ -29,6 +29,13 @@ public class Employee {
     @JoinColumn(name = "department_id", nullable = false)
     private Department department;
 
+    @Column(nullable = false, columnDefinition = "boolean default true")
+    private boolean active = true;
+
+    @Column(name = "must_change_password", nullable = false,
+            columnDefinition = "boolean default false")
+    private boolean mustChangePassword = false;
+
     public Employee(){
 
     }

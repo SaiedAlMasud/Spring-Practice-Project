@@ -52,7 +52,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             .findByEmailIgnoreCase(email)
                             .orElse(null);
 
-                    if (employee != null) {
+                    if (employee != null && employee.isActive()) {
+
+                        if (employee.isMustChangePassword()
+                                && !request.getRequestURI().equals("/api/account/change-password")) {
+                            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                            response.setContentType("application/json");
+                            response.getWriter().write("{\"message\":\"Password change required\"}");
+                            return;
+                        }
+
                         var authorities = List.of(
                                 new SimpleGrantedAuthority(
                                         "ROLE_" + employee.getRole().name()

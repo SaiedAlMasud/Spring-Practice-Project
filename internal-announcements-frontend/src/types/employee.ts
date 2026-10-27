@@ -5,6 +5,7 @@ export interface Employee {
   role: string;
   departmentId: number;
   departmentName: string;
+  active: boolean;
 }
 
 export interface CreateEmployeeRequest {

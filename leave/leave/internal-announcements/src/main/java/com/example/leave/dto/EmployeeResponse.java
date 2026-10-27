@@ -6,7 +6,8 @@ public record EmployeeResponse (
         String email,
         String role,
         Long departmentId,
-        String departmentName
+        String departmentName,
+        boolean active
 ){
 
 }

@@ -2,6 +2,7 @@ package com.example.leave.service;
 
 import com.example.leave.dto.CreateEmployeeRequest;
 import com.example.leave.dto.EmployeeResponse;
+import com.example.leave.dto.ResetPasswordRequest;
 import com.example.leave.entity.Department;
 import com.example.leave.entity.Employee;
 import com.example.leave.entity.Role;
@@ -71,6 +72,7 @@ public class EmployeeService {
         employee.setRole(Role.EMPLOYEE);
         employee.setDepartment(department);
 
+        employee.setMustChangePassword(true);
         Employee saved = employeeRepository.save(employee);
 
         return toResponse(saved);
@@ -85,6 +87,59 @@ public class EmployeeService {
                 .map(this::toResponse)
                 .toList();
     }
+
+
+    @Transactional
+    public void setActive(Long id, boolean active, String currentEmail) {
+        requireHr(currentEmail);
+
+        Employee target = employeeRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Employee not found"
+                ));
+
+        if (target.getEmail().equalsIgnoreCase(currentEmail)) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "You cannot change your own account status"
+            );
+        }
+
+        if (!active && target.getRole() == Role.HR) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "HR accounts cannot be deactivated here"
+            );
+        }
+
+        target.setActive(active);
+    }
+    @Transactional
+    public void resetPassword(
+            Long id,
+            ResetPasswordRequest request,
+            String requesterEmail
+    ) {
+        requireHr(requesterEmail);
+
+        Employee target = employeeRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Employee not found"
+                ));
+
+        if (target.getRole() == Role.HR) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "HR accounts must use the Change Password option"
+            );
+        }
+
+        target.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        target.setMustChangePassword(true);
+    }
+
 
     private void requireHr(String requesterEmail) {
         Employee requester = employeeRepository
@@ -109,7 +164,8 @@ public class EmployeeService {
                 employee.getEmail(),
                 employee.getRole().name(),
                 employee.getDepartment().getId(),
-                employee.getDepartment().getName()
+                employee.getDepartment().getName(),
+                employee.isActive()
         );
     }
 }
