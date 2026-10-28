@@ -18,9 +18,11 @@ services:
       PGADMIN_DEFAULT_PASSWORD: admin123
     ports:
       - "5050:80"
+    depends_on:
+      - postgres
 
   backend:
-    build: .
+    build: ./leave/internal-announcements
     ports:
       - "8080:8080"
     environment:
@@ -30,7 +32,12 @@ services:
     depends_on:
       - postgres
 
+  frontend:
+    build: ./internal-announcements-frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
 volumes:
   postgres_data:
-
-
