@@ -1,7 +1,7 @@
-
 package com.example.leave.controller;
 
 import com.example.leave.dto.DashboardResponse;
+import com.example.leave.dto.EmployeeDashboardResponse;
 import com.example.leave.entity.Employee;
 import com.example.leave.entity.Role;
 import com.example.leave.repository.EmployeeRepository;
@@ -46,5 +46,12 @@ public class DashboardController {
         }
 
         return dashboardService.getDashboardSummary();
+    }
+
+    @GetMapping("/employee")
+    public EmployeeDashboardResponse getEmployeeDashboard(
+            Authentication authentication
+    ) {
+        return dashboardService.getEmployeeDashboard(authentication.getName());
     }
 }

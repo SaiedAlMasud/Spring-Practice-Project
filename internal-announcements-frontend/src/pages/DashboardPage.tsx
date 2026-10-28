@@ -1,50 +1,41 @@
 import { useCallback, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import axios from "axios";
-import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
-
-interface DashboardSummary {
-  totalEmployees: number;
-  totalAnnouncements: number;
-  activeAnnouncements: number;
-  archivedAnnouncements: number;
-}
+import {
+  getEmployeeDashboard,
+  getHrDashboard,
+} from "../services/dashboardService";
+import type {
+  EmployeeDashboard,
+  HrDashboard,
+} from "../types/dashboard";
+import DashboardHeader from "../components/dashboard/DashboardHeader";
+import DashboardSkeleton from "../components/dashboard/DashboardSkeleton";
+import EmployeeDashboardView from "../components/dashboard/EmployeeDashboardView";
+import ErrorAlert from "../components/dashboard/ErrorAlert";
+import HrDashboardView from "../components/dashboard/HrDashboardView";
+import { getErrorMessage } from "../components/dashboard/helpers";
 
 export default function DashboardPage() {
   const { user } = useAuth();
   const isHR = user?.role === "HR";
 
-  const [summary, setSummary] = useState<DashboardSummary | null>(null);
+  const [hrData, setHrData] = useState<HrDashboard | null>(null);
+  const [employeeData, setEmployeeData] = useState<EmployeeDashboard | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const loadDashboard = useCallback(async () => {
-    if (!isHR) return;
-
     setLoading(true);
     setError("");
 
     try {
-      const response = await api.get<DashboardSummary>("/dashboard");
-      setSummary(response.data);
-    } catch (err: unknown) {
-      if (axios.isAxiosError(err)) {
-        if (!err.response) {
-          setError("Unable to connect to the backend server.");
-        } else if (err.response.status === 401) {
-          setError("Your session has expired. Please log in again.");
-        } else if (err.response.status === 403) {
-          setError("You do not have permission to view dashboard statistics.");
-        } else {
-          setError(
-            err.response.data?.message ??
-              "Failed to load dashboard statistics."
-          );
-        }
+      if (isHR) {
+        setHrData(await getHrDashboard());
       } else {
-        setError("An unexpected error occurred.");
+        setEmployeeData(await getEmployeeDashboard());
       }
+    } catch (err: unknown) {
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -54,217 +45,32 @@ export default function DashboardPage() {
     void loadDashboard();
   }, [loadDashboard]);
 
-  const statCards = [
-    {
-      label: "Total Employees",
-      value: summary?.totalEmployees,
-      description: "Registered employees",
-    },
-    {
-      label: "Total Announcements",
-      value: summary?.totalAnnouncements,
-      description: "All announcements",
-    },
-    {
-      label: "Active Announcements",
-      value: summary?.activeAnnouncements,
-      description: "Currently active and unexpired",
-    },
-    {
-      label: "Archived Announcements",
-      value: summary?.archivedAnnouncements,
-      description: "Archived announcements",
-    },
-  ];
+  const hasData = isHR ? hrData !== null : employeeData !== null;
 
   return (
-    <main className="min-h-[calc(100vh-4rem)] bg-slate-50 px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-6xl">
-        <header className="mb-8">
-          <p className="text-sm font-semibold uppercase tracking-wider text-blue-600">
-            {isHR ? "HR Portal" : "Employee Portal"}
-          </p>
+    <main className="min-h-[calc(100vh-4rem)] bg-slate-50 px-4 py-8 sm:px-6 md:min-h-screen lg:px-8">
+      <div className="mx-auto max-w-7xl">
+        <DashboardHeader
+          email={user?.email}
+          isHR={isHR}
+          loading={loading}
+          onRefresh={() => void loadDashboard()}
+        />
 
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
-            Dashboard
-          </h1>
-
-          <p className="mt-2 text-slate-600">
-            Welcome, {user?.email ?? "User"}
-          </p>
-        </header>
-
-        {isHR ? (
-          <>
-            <section className="mb-8">
-              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <h2 className="text-xl font-bold text-slate-900">
-                    Overview
-                  </h2>
-                  <p className="mt-1 text-sm text-slate-500">
-                    Summary of employees and announcements.
-                  </p>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => void loadDashboard()}
-                  disabled={loading}
-                  className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-50"
-                >
-                  {loading ? "Refreshing..." : "Refresh Statistics"}
-                </button>
-              </div>
-
-              {error && (
-                <div
-                  role="alert"
-                  className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700"
-                >
-                  <p>{error}</p>
-                  <button
-                    type="button"
-                    onClick={() => void loadDashboard()}
-                    className="mt-2 font-semibold underline"
-                  >
-                    Try again
-                  </button>
-                </div>
-              )}
-
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                {statCards.map((card) => (
-                  <article
-                    key={card.label}
-                    className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
-                  >
-                    <p className="text-sm font-medium text-slate-500">
-                      {card.label}
-                    </p>
-
-                    <p className="mt-3 text-3xl font-bold text-slate-900">
-                      {loading && summary === null
-                        ? "..."
-                        : (card.value ?? "—")}
-                    </p>
-
-                    <p className="mt-3 text-xs text-slate-500">
-                      {card.description}
-                    </p>
-                  </article>
-                ))}
-              </div>
-            </section>
-
-            <section>
-              <h2 className="mb-4 text-xl font-bold text-slate-900">
-                HR Management
-              </h2>
-
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                <Link
-                  to="/announcements"
-                  className="group rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition hover:border-blue-300 hover:shadow-md"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="rounded-xl bg-blue-100 p-3 text-2xl">
-                      📢
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-slate-900 group-hover:text-blue-700">
-                        Manage Announcements
-                      </h3>
-                      <p className="mt-1 text-sm text-slate-500">
-                        View, edit and archive announcements.
-                      </p>
-                    </div>
-                  </div>
-                </Link>
-
-                <Link
-                  to="/announcements/create"
-                  className="group rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition hover:border-blue-300 hover:shadow-md"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="rounded-xl bg-green-100 p-3 text-2xl">
-                      ✍️
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-slate-900 group-hover:text-blue-700">
-                        Create Announcement
-                      </h3>
-                      <p className="mt-1 text-sm text-slate-500">
-                        Publish a company update or policy.
-                      </p>
-                    </div>
-                  </div>
-                </Link>
-
-                <Link
-                  to="/employees"
-                  className="group rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition hover:border-blue-300 hover:shadow-md"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="rounded-xl bg-purple-100 p-3 text-2xl">
-                      👥
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-slate-900 group-hover:text-blue-700">
-                        Manage Employees
-                      </h3>
-                      <p className="mt-1 text-sm text-slate-500">
-                        View employees and add new ones.
-                      </p>
-                    </div>
-                  </div>
-                </Link>
-              </div>
-            </section>
-          </>
-        ) : (
-          <section>
-            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-              <h2 className="text-xl font-bold text-slate-900">
-                Stay informed
-              </h2>
-
-              <p className="mt-2 text-sm leading-6 text-slate-600">
-                View company announcements, read important policies and
-                acknowledge policies that require your confirmation.
-              </p>
-
-              <Link
-                to="/announcements"
-                className="mt-5 inline-flex rounded-lg bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
-              >
-                View Announcements
-              </Link>
-            </div>
-
-            <div className="mt-6 grid gap-4 sm:grid-cols-2">
-              <article className="rounded-xl border border-slate-200 bg-white p-5">
-                <div className="text-2xl">📢</div>
-                <h3 className="mt-3 font-semibold text-slate-900">
-                  Company Updates
-                </h3>
-                <p className="mt-2 text-sm leading-6 text-slate-500">
-                  Read announcements relevant to you and your department.
-                </p>
-              </article>
-
-              <article className="rounded-xl border border-slate-200 bg-white p-5">
-                <div className="text-2xl">✓</div>
-                <h3 className="mt-3 font-semibold text-slate-900">
-                  Policy Acknowledgement
-                </h3>
-                <p className="mt-2 text-sm leading-6 text-slate-500">
-                  Review policies and acknowledge them when required.
-                </p>
-              </article>
-            </div>
-          </section>
+        {error && (
+          <ErrorAlert
+            message={error}
+            onRetry={() => void loadDashboard()}
+          />
         )}
+
+        {loading && !hasData ? (
+          <DashboardSkeleton cards={isHR ? 6 : 4} />
+        ) : isHR && hrData ? (
+          <HrDashboardView data={hrData} />
+        ) : !isHR && employeeData ? (
+          <EmployeeDashboardView data={employeeData} />
+        ) : null}
 
         <footer className="mt-10 border-t border-slate-200 pt-5 text-center text-xs text-slate-400">
           Internal Announcements and Policy Acknowledgement System
